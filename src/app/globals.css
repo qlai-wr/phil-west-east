@@ -1,0 +1,67 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-ivory: #FDFBF7;
+  --color-parchment: #F5F1E8;
+  --color-ink: #2D3748;
+  --color-ink-light: #4A5568;
+  --color-ink-lighter: #718096;
+  --color-western: #1E40AF;
+  --color-chinese: #DC2626;
+}
+
+body {
+  background-color: var(--color-ivory);
+  color: var(--color-ink);
+  font-family: 'Georgia', 'Cambria', 'Times New Roman', serif;
+}
+
+/* 焦点指示器 - 无障碍访问 */
+*:focus-visible {
+  outline: 2px solid var(--color-ink);
+  outline-offset: 2px;
+}
+
+/* 滚动条样式 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-parchment);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-ink-lighter);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-ink-light);
+}
+
+/* 图表容器通用样式 */
+.chart-container {
+  background: white;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* 加载指示器 */
+.loading-spinner {
+  border: 3px solid var(--color-parchment);
+  border-top: 3px solid var(--color-ink);
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
