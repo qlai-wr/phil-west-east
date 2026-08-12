@@ -52,10 +52,11 @@
 
 #### 验收标准
 
-1. THE Concept_Network SHALL 渲染西方核心概念演变链：Being → Substance → Subject → Language，其中每个概念以 Concept_Node 形式呈现，相邻概念之间以有向边连接
-2. THE Concept_Network SHALL 渲染中国核心概念演变链：道/无 → 理/气 → 心/良知，其中每个概念以 Concept_Node 形式呈现，相邻概念之间以有向边连接
-3. THE Concept_Network SHALL 通过视觉区分（颜色或形状）标识西方概念节点和中国概念节点
-4. THE Concept_Network SHALL 支持用户通过鼠标拖拽平移和滚轮缩放来浏览拓扑图
+1. THE Concept_Network SHALL 渲染西方核心概念演变链：Being → Form → Substance → Cogito → Subject → Noumenon → Language（另有 Subject → Will 分支），其中每个概念以 Concept_Node 形式呈现，相邻概念之间以有向边连接
+2. THE Concept_Network SHALL 渲染中国核心概念演变链，按历史时序分为：先秦道家线（道 → 无）、先秦儒家线（仁 → 天人感应）、宋明汇合线（道 → 理、仁 → 理）、宋明展开线（理 → 气、理 → 心 → 良知），其中每个概念以 Concept_Node 形式呈现，相邻概念之间以有向边连接
+3. THE Concept_Network SHALL 通过视觉区分（靛蓝色代表西方、朱砂色代表中国）标识概念节点的所属传统
+4. THE Concept_Network SHALL 以实线箭头表示演变关系、虚线无箭头表示跨文化对照关系
+5. THE Concept_Network SHALL 支持用户通过鼠标拖拽平移和滚轮缩放来浏览拓扑图
 
 ### 需求 4：概念节点详情交互
 
@@ -144,3 +145,15 @@
 2. THE Platform SHALL 为所有图表组件提供 ARIA 标签，描述图表的类型和数据摘要
 3. THE Platform SHALL 确保所有文本内容与背景之间的颜色对比度不低于 4.5:1
 4. WHEN 用户使用键盘 Tab 键导航时, THE Platform SHALL 以可见的焦点指示器标识当前聚焦的元素
+
+### 需求 12：中英文语言切换
+
+**用户故事：** 作为一名国际用户，我希望通过按钮在中文和英文界面之间切换，以便使用我熟悉的语言浏览平台内容。
+
+#### 验收标准
+
+1. THE Platform SHALL 在页面头部提供一个语言切换按钮，中文模式下显示"EN"，英文模式下显示"中文"
+2. WHEN 用户点击语言切换按钮时, THE Platform SHALL 将所有界面文字（标题、标签、图例、说明文字、详情面板）切换为目标语言
+3. THE Platform SHALL 在任一语言模式下仅显示该语言的内容，不做中英文并列展示
+4. THE Platform SHALL 默认以中文模式启动
+5. THE Platform SHALL 确保语言切换后所有 D3.js 图表中的文本标签同步更新

@@ -3,13 +3,16 @@
 @tailwind utilities;
 
 :root {
-  --color-ivory: #FDFBF7;
-  --color-parchment: #F5F1E8;
-  --color-ink: #2D3748;
+  --color-ivory: #F0F2F5;
+  --color-parchment: #E4E8ED;
+  --color-ink: #1A202C;
   --color-ink-light: #4A5568;
-  --color-ink-lighter: #718096;
-  --color-western: #1E40AF;
-  --color-chinese: #DC2626;
+  --color-ink-lighter: #A0AEC0;
+  --color-western: #2B4C7E;
+  --color-western-light: #5B7FB5;
+  --color-chinese: #C53030;
+  --color-chinese-light: #E2725B;
+  --color-gold: #B7791F;
 }
 
 body {
@@ -20,7 +23,7 @@ body {
 
 /* 焦点指示器 - 无障碍访问 */
 *:focus-visible {
-  outline: 2px solid var(--color-ink);
+  outline: 2px solid var(--color-gold);
   outline-offset: 2px;
 }
 
@@ -46,15 +49,38 @@ body {
 /* 图表容器通用样式 */
 .chart-container {
   background: white;
-  border: 1px solid #E2E8F0;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid #E8E0D4;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(26, 32, 44, 0.08), 0 1px 2px rgba(26, 32, 44, 0.04);
+}
+
+/* Header gradient bar */
+.header-bar {
+  background: linear-gradient(135deg, var(--color-western) 0%, #3D5A8E 50%, var(--color-chinese) 100%);
+  height: 3px;
+}
+
+/* Tab active indicator */
+.tab-active {
+  position: relative;
+}
+.tab-active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60%;
+  height: 3px;
+  background: linear-gradient(90deg, var(--color-western), var(--color-chinese));
+  border-radius: 2px;
 }
 
 /* 加载指示器 */
 .loading-spinner {
   border: 3px solid var(--color-parchment);
-  border-top: 3px solid var(--color-ink);
+  border-top: 3px solid var(--color-western);
+  border-right: 3px solid var(--color-chinese);
   border-radius: 50%;
   width: 32px;
   height: 32px;
@@ -64,4 +90,20 @@ body {
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+/* 时间轴轨道渐变 */
+.track-western {
+  background: linear-gradient(90deg, var(--color-western-light), var(--color-western));
+  opacity: 0.4;
+}
+
+.track-chinese {
+  background: linear-gradient(90deg, var(--color-chinese-light), var(--color-chinese));
+  opacity: 0.4;
+}
+
+/* 概念网络画布背景 */
+.network-canvas {
+  background: linear-gradient(180deg, #F0F2F5 0%, #E8EAEF 100%);
 }

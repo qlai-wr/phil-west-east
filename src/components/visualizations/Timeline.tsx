@@ -3,6 +3,7 @@
 import { useState, useCallback, useMemo, useRef, useEffect } from 'react'
 import { philosophers, getCoreTextsByPhilosopher } from '../../../data/philosophyData'
 import type { Philosopher } from '../../../data/philosophyData'
+import { useLanguage } from '../LanguageContext'
 
 interface TimelineProps {
   className?: string
@@ -13,6 +14,7 @@ export default function Timeline({ className = '' }: TimelineProps) {
   const [selectedPhilosopher, setSelectedPhilosopher] = useState<Philosopher | null>(null)
   const [isDragging, setIsDragging] = useState(false)
   const sliderRef = useRef<HTMLDivElement>(null)
+  const { lang, t } = useLanguage()
 
   const westernPhilosophers = useMemo(
     () => philosophers.filter(p => p.tradition === 'western').sort((a, b) => a.birth - b.birth),
@@ -26,13 +28,12 @@ export default function Timeline({ className = '' }: TimelineProps) {
   // 计算每个哲学家的连接线高度，避免相邻哲学家文字重叠
   const calculateLineHeights = useCallback((philosopherList: Philosopher[]) => {
     const heights: number[] = []
-    const minGap = 200 // 如果两个哲学家相差小于200年，需要错开
-    const shortHeight = 5
-    const tallHeight = 45
+    const minGap = 300 // 如果两个哲学家相差小于300年，需要错开
+    const levelHeights = [5, 45, 85, 125] // 四级高度交替
     
     for (let i = 0; i < philosopherList.length; i++) {
       if (i === 0) {
-        heights.push(shortHeight)
+        heights.push(levelHeights[0])
         continue
       }
       
@@ -40,12 +41,13 @@ export default function Timeline({ className = '' }: TimelineProps) {
       const currYear = (philosopherList[i].birth + philosopherList[i].death) / 2
       const gap = currYear - prevYear
       
-      // 如果与前一个太近，就用不同的高度
       if (gap < minGap) {
-        heights.push(heights[i - 1] === shortHeight ? tallHeight : shortHeight)
+        // 找一个与前一个不同的高度级别
+        const prevLevel = levelHeights.indexOf(heights[i - 1])
+        const nextLevel = (prevLevel + 1) % levelHeights.length
+        heights.push(levelHeights[nextLevel])
       } else {
-        // 距离够远，可以用短高度
-        heights.push(shortHeight)
+        heights.push(levelHeights[0])
       }
     }
     return heights
@@ -122,6 +124,10 @@ export default function Timeline({ className = '' }: TimelineProps) {
   }, [])
 
   const formatYear = (year: number) => {
+    if (lang === 'en') {
+      if (year < 0) return `${Math.abs(year)} BCE`
+      return `${year} CE`
+    }
     if (year < 0) return `公元前${Math.abs(year)}年`
     return `公元${year}年`
   }
@@ -160,28 +166,25 @@ export default function Timeline({ className = '' }: TimelineProps) {
             {/* 名称标签 - 最上方 */}
             <div className="text-center mb-1">
               <p className="text-sm font-bold whitespace-nowrap text-gray-900">
-                {philosopher.name.zh}
-              </p>
-              <p className="text-xs font-semibold whitespace-nowrap text-gray-700">
-                {philosopher.name.en}
+                {lang === 'zh' ? philosopher.name.zh : philosopher.name.en}
               </p>
               {isActive && texts.length > 0 && (
-                <p className="text-xs font-medium text-accent-western mt-1 max-w-[100px] truncate">
-                  《{texts[0].title.zh}》
+                <p className="text-xs font-medium text-western mt-1 max-w-[100px] truncate">
+                  {lang === 'zh' ? `《${texts[0].title.zh}》` : texts[0].title.en}
                 </p>
               )}
             </div>
             {/* 连接线 */}
             <div 
-              className={`w-px ${isActive ? 'bg-accent-western' : 'bg-accent-western/30'}`}
+              className={`w-px ${isActive ? 'bg-western' : 'bg-western/30'}`}
               style={{ height: `${lineHeight}px` }}
             />
             {/* 节点圆点 - 在轨道上 */}
             <div
               className={`
-                w-3 h-3 rounded-full border-2 transition-colors flex-shrink-0
-                border-accent-western
-                ${isActive ? 'bg-accent-western' : 'bg-ivory'}
+                w-3.5 h-3.5 rounded-full border-2 transition-colors flex-shrink-0
+                border-western
+                ${isActive ? 'bg-western shadow-md' : 'bg-western-light'}
               `}
             />
           </button>
@@ -211,27 +214,24 @@ export default function Timeline({ className = '' }: TimelineProps) {
             {/* 节点圆点 - 在轨道上 */}
             <div
               className={`
-                w-3 h-3 rounded-full border-2 transition-colors flex-shrink-0
-                border-accent-chinese
-                ${isActive ? 'bg-accent-chinese' : 'bg-ivory'}
+                w-3.5 h-3.5 rounded-full border-2 transition-colors flex-shrink-0
+                border-chinese
+                ${isActive ? 'bg-chinese shadow-md' : 'bg-chinese-light'}
               `}
             />
             {/* 连接线 */}
             <div 
-              className={`w-px ${isActive ? 'bg-accent-chinese' : 'bg-accent-chinese/30'}`}
+              className={`w-px ${isActive ? 'bg-chinese' : 'bg-chinese/30'}`}
               style={{ height: `${lineHeight}px` }}
             />
             {/* 名称标签 - 最下方 */}
             <div className="text-center mt-1">
               <p className="text-sm font-bold whitespace-nowrap text-gray-900">
-                {philosopher.name.zh}
-              </p>
-              <p className="text-xs font-semibold whitespace-nowrap text-gray-700">
-                {philosopher.name.en}
+                {lang === 'zh' ? philosopher.name.zh : philosopher.name.en}
               </p>
               {isActive && texts.length > 0 && (
-                <p className="text-xs font-medium text-accent-chinese mt-1 max-w-[100px] truncate">
-                  《{texts[0].title.zh}》
+                <p className="text-xs font-medium text-chinese mt-1 max-w-[100px] truncate">
+                  {lang === 'zh' ? `《${texts[0].title.zh}》` : texts[0].title.en}
                 </p>
               )}
             </div>
@@ -242,9 +242,8 @@ export default function Timeline({ className = '' }: TimelineProps) {
   }
 
   return (
-    <div className={`chart-container p-6 ${className}`} role="region" aria-label="双轨历史时间轴">
-      <h2 className="text-xl font-serif text-ink mb-2">双轨历史时间轴</h2>
-      <p className="text-sm text-ink-light">Dual-Track Historical Timeline</p>
+    <div className={`chart-container p-6 ${className}`} role="region" aria-label={t('双轨历史时间轴', 'Dual-Track Historical Timeline')}>
+      <h2 className="text-xl font-serif text-ink mb-4">{t('双轨历史时间轴', 'Dual-Track Historical Timeline')}</h2>
 
       {/* 时间轴容器 */}
       <div className="mt-48 mb-8 px-16">
@@ -252,12 +251,12 @@ export default function Timeline({ className = '' }: TimelineProps) {
         <div className="relative mb-32">
         {/* 西方轨道 (上方) */}
         <div 
-          className="absolute w-full h-1 bg-accent-western/30 -top-16"
+          className="absolute w-full h-1.5 rounded-full bg-gradient-to-r from-western-light to-western -top-16"
           role="list"
           aria-label="西方哲学家时间轴"
         >
-          <div className="absolute -left-2 top-1/2 -translate-y-1/2 text-xs text-accent-western font-medium">
-            西方
+          <div className="absolute -left-12 top-1/2 -translate-y-1/2 text-xs text-western font-semibold">
+            {t('西方', 'Western')}
           </div>
           {westernPhilosophers.map((p, index) => (
             <PhilosopherNode 
@@ -272,7 +271,7 @@ export default function Timeline({ className = '' }: TimelineProps) {
         {/* 时间刻度轴 */}
         <div 
           ref={sliderRef}
-          className="relative w-full h-2 bg-gray-300 rounded cursor-pointer select-none"
+          className="relative w-full h-2.5 bg-gradient-to-r from-ink-faint via-ink-lighter to-ink-faint rounded-full cursor-pointer select-none"
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
@@ -281,11 +280,11 @@ export default function Timeline({ className = '' }: TimelineProps) {
           onTouchMove={handleTouchMove}
           onTouchEnd={handleMouseUp}
           role="slider"
-          aria-label="时间选择滑块"
+          aria-label={t('时间选择滑块', 'Time selection slider')}
           aria-valuemin={minYear}
           aria-valuemax={maxYear}
           aria-valuenow={selectedYear || 0}
-          aria-valuetext={selectedYear ? formatYear(selectedYear) : '未选择'}
+          aria-valuetext={selectedYear ? formatYear(selectedYear) : t('未选择', 'Not selected')}
           tabIndex={0}
         >
           {/* 时间刻度 */}
@@ -317,12 +316,12 @@ export default function Timeline({ className = '' }: TimelineProps) {
 
         {/* 中国轨道 (下方) */}
         <div 
-          className="absolute w-full h-1 bg-accent-chinese/30 top-16"
+          className="absolute w-full h-1.5 rounded-full bg-gradient-to-r from-chinese-light to-chinese top-16"
           role="list"
           aria-label="中国哲学家时间轴"
         >
-          <div className="absolute -left-2 top-1/2 -translate-y-1/2 text-xs text-accent-chinese font-medium">
-            中国
+          <div className="absolute -left-12 top-1/2 -translate-y-1/2 text-xs text-chinese font-semibold">
+            {t('中国', 'Chinese')}
           </div>
           {chinesePhilosophers.map((p, index) => (
             <PhilosopherNode 
@@ -339,12 +338,12 @@ export default function Timeline({ className = '' }: TimelineProps) {
       {/* 图例 */}
       <div className="flex justify-center gap-8 mt-16 text-sm">
         <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded-full bg-accent-western" />
-          <span className="text-ink-light">Western Philosophy</span>
+          <div className="w-3.5 h-3.5 rounded-full bg-western" />
+          <span className="text-ink-light">{t('西方哲学', 'Western Philosophy')}</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded-full bg-accent-chinese" />
-          <span className="text-ink-light">Chinese Philosophy</span>
+          <div className="w-3.5 h-3.5 rounded-full bg-chinese" />
+          <span className="text-ink-light">{t('中国哲学', 'Chinese Philosophy')}</span>
         </div>
       </div>
 
@@ -367,6 +366,7 @@ function PhilosopherDetailPanel({
   onClose: () => void 
 }) {
   const texts = getCoreTextsByPhilosopher(philosopher.id)
+  const { lang, t } = useLanguage()
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -377,6 +377,10 @@ function PhilosopherDetailPanel({
   }, [onClose])
 
   const formatYear = (year: number) => {
+    if (lang === 'en') {
+      if (year < 0) return `${Math.abs(year)} BCE`
+      return `${year} CE`
+    }
     if (year < 0) return `公元前${Math.abs(year)}年`
     return `公元${year}年`
   }
@@ -398,14 +402,13 @@ function PhilosopherDetailPanel({
           <div className="flex justify-between items-start mb-4">
             <div>
               <h3 id="philosopher-name" className="text-xl font-serif text-ink">
-                {philosopher.name.zh}
+                {lang === 'zh' ? philosopher.name.zh : philosopher.name.en}
               </h3>
-              <p className="text-ink-light">{philosopher.name.en}</p>
             </div>
             <button
               onClick={onClose}
               className="text-ink-lighter hover:text-ink p-1"
-              aria-label="关闭详情面板"
+              aria-label={t('关闭详情面板', 'Close detail panel')}
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -417,26 +420,26 @@ function PhilosopherDetailPanel({
           <div className="mb-4">
             <span className={`
               inline-block px-2 py-1 rounded text-xs
-              ${philosopher.tradition === 'western' ? 'bg-accent-western/10 text-accent-western' : 'bg-accent-chinese/10 text-accent-chinese'}
+              ${philosopher.tradition === 'western' ? 'bg-western/10 text-western' : 'bg-chinese/10 text-chinese'}
             `}>
               {formatYear(philosopher.birth)} — {formatYear(philosopher.death)}
             </span>
-            <span className="ml-2 text-sm text-ink-light">{philosopher.era.zh}</span>
+            <span className="ml-2 text-sm text-ink-light">{lang === 'zh' ? philosopher.era.zh : philosopher.era.en}</span>
           </div>
 
           {/* 核心思想摘要 */}
           <div className="mb-4">
-            <h4 className="text-sm font-medium text-ink mb-2">核心思想</h4>
-            <p className="text-sm text-ink-light leading-relaxed">{philosopher.summary.zh}</p>
+            <h4 className="text-sm font-medium text-ink mb-2">{t('核心思想', 'Core Ideas')}</h4>
+            <p className="text-sm text-ink-light leading-relaxed">{lang === 'zh' ? philosopher.summary.zh : philosopher.summary.en}</p>
           </div>
 
           {/* 主要著作 */}
           <div className="mb-4">
-            <h4 className="text-sm font-medium text-ink mb-2">主要著作</h4>
+            <h4 className="text-sm font-medium text-ink mb-2">{t('主要著作', 'Major Works')}</h4>
             <ul className="space-y-1">
               {philosopher.works.map((work, i) => (
                 <li key={i} className="text-sm text-ink-light">
-                  《{work.zh}》<span className="text-ink-lighter ml-1">({work.en})</span>
+                  {lang === 'zh' ? `《${work.zh}》` : work.en}
                 </li>
               ))}
             </ul>
@@ -445,12 +448,16 @@ function PhilosopherDetailPanel({
           {/* 经典摘录 */}
           {texts.length > 0 && (
             <div>
-              <h4 className="text-sm font-medium text-ink mb-2">经典摘录</h4>
+              <h4 className="text-sm font-medium text-ink mb-2">{t('经典摘录', 'Classic Excerpts')}</h4>
               {texts.map((text, i) => (
                 <blockquote key={i} className="border-l-2 border-ink/20 pl-4 mb-3">
-                  <p className="text-sm text-ink italic mb-1">"{text.excerpt.zh}"</p>
+                  <p className="text-sm text-ink italic mb-1">"{lang === 'zh' ? text.excerpt.zh : text.excerpt.en}"</p>
                   <cite className="text-xs text-ink-lighter not-italic">
-                    —— 《{text.title.zh}》{text.chapter?.zh && `· ${text.chapter.zh}`}
+                    {lang === 'zh' ? (
+                      <>—— 《{text.title.zh}》{text.chapter?.zh && `· ${text.chapter.zh}`}</>
+                    ) : (
+                      <>— {text.title.en}{text.chapter?.en && `, ${text.chapter.en}`}</>
+                    )}
                   </cite>
                 </blockquote>
               ))}

@@ -30,8 +30,8 @@ export interface ConceptNode {
   term: { zh: string; en: string };
   tradition: "western" | "chinese";
   definition: { zh: string; en: string };
-  source: { work: { zh: string; en: string }; chapter?: string };
-  coOccurrence: string[]; // 共现词汇
+  source: { work: { zh: string; en: string }; chapter?: { zh: string; en: string } };
+  coOccurrence: { zh: string; en: string }[]; // 共现词汇
   weight: number;
 }
 
@@ -58,7 +58,7 @@ export interface RadarDimension {
   logic: number;         // 逻辑学
 }
 
-// --- 哲学家数据 (按需求文档) ---
+// --- 哲学家数据 ---
 
 export const philosophers: Philosopher[] = [
   // 西方哲学家
@@ -96,6 +96,42 @@ export const philosophers: Philosopher[] = [
       { zh: "形而上学", en: "Metaphysics" },
       { zh: "尼各马可伦理学", en: "Nicomachean Ethics" },
       { zh: "工具论", en: "Organon" },
+    ],
+  },
+  {
+    id: "augustine",
+    name: { zh: "奥古斯丁", en: "Augustine of Hippo" },
+    birth: 354,
+    death: 430,
+    era: { zh: "罗马帝国晚期 (354-430)", en: "Late Roman Empire (354-430)" },
+    avatar: "/avatars/augustine.svg",
+    tradition: "western",
+    summary: {
+      zh: "早期基督教哲学集大成者。融合柏拉图哲学与基督教神学，提出自由意志、原罪、恩典等核心概念，其《忏悔录》开创了西方自传体哲学传统。",
+      en: "Synthesizer of early Christian philosophy, integrated Platonism with Christian theology. Developed concepts of free will, original sin, and grace."
+    },
+    works: [
+      { zh: "忏悔录", en: "Confessions" },
+      { zh: "上帝之城", en: "The City of God" },
+      { zh: "论自由意志", en: "On Free Choice of the Will" },
+    ],
+  },
+  {
+    id: "aquinas",
+    name: { zh: "托马斯·阿奎那", en: "Thomas Aquinas" },
+    birth: 1225,
+    death: 1274,
+    era: { zh: "中世纪经院哲学 (1225-1274)", en: "Medieval Scholasticism (1225-1274)" },
+    avatar: "/avatars/aquinas.svg",
+    tradition: "western",
+    summary: {
+      zh: "经院哲学集大成者。将亚里士多德哲学系统融入基督教神学，提出「存在与本质」的区分及「五路证明」，其体系后成为天主教官方哲学。",
+      en: "The summit of Scholasticism, systematically integrated Aristotle into Christian theology. Distinguished existence from essence and formulated the Five Ways."
+    },
+    works: [
+      { zh: "神学大全", en: "Summa Theologica" },
+      { zh: "反异教大全", en: "Summa Contra Gentiles" },
+      { zh: "论存在者与本质", en: "On Being and Essence" },
     ],
   },
   {
@@ -251,7 +287,7 @@ export const philosophers: Philosopher[] = [
     },
     works: [
       { zh: "四书章句集注", en: "Collected Commentaries on the Four Books" },
-      { zh: "近思录", en: "Reflerta on Things at Hand" },
+      { zh: "近思录", en: "Reflections on Things at Hand" },
     ],
   },
   {
@@ -259,7 +295,7 @@ export const philosophers: Philosopher[] = [
     name: { zh: "王阳明", en: "Wang Yangming" },
     birth: 1472,
     death: 1529,
-    era: { zh: "宋明心学 (1472-1529)", en: "Neo-Confucianism (1472-1529)" },
+    era: { zh: "宋明心学 (1472-1529)", en: "School of Mind (1472-1529)" },
     avatar: "/avatars/wangyangming.svg",
     tradition: "chinese",
     summary: {
@@ -297,6 +333,28 @@ export const coreTexts: CoreText[] = [
     excerpt: {
       zh: "存在之为存在，以及存在本身所具有的属性，乃是我们所要研究的。",
       en: "There is a science which investigates being as being and the attributes which belong to this in virtue of its own nature.",
+    },
+  },
+  // 奥古斯丁
+  {
+    philosopherId: "augustine",
+    title: { zh: "忏悔录", en: "Confessions" },
+    year: 397,
+    chapter: { zh: "第十一卷", en: "Book XI" },
+    excerpt: {
+      zh: "时间是什么？若无人问我，我便知道；若要向提问者解释，我便不知道。",
+      en: "What then is time? If no one asks me, I know; if I wish to explain it to someone who asks, I know not.",
+    },
+  },
+  // 阿奎那
+  {
+    philosopherId: "aquinas",
+    title: { zh: "神学大全", en: "Summa Theologica" },
+    year: 1265,
+    chapter: { zh: "第一部分·第二题", en: "Part I, Question 2" },
+    excerpt: {
+      zh: "存在与本质是理智首先把握的东西。存在是一切现实活动的现实性，是一切完善性的完善性。",
+      en: "Being is that which the intellect first conceives. Existence is the actuality of all acts, and therefore the perfection of all perfections.",
     },
   },
   // 笛卡尔
@@ -413,117 +471,262 @@ export const coreTexts: CoreText[] = [
 
 
 // --- 概念网络节点 ---
-// 西方演变链: Being → Substance → Subject → Language
-// 中国演变链: 道/无 → 理/气 → 心/良知
+// 西方演变链: Being → Form → Substance → Cogito → Subject → Noumenon → Language → Will
+// 中国演变链（按历史时序）:
+//   先秦道家: 道 → 无
+//   先秦儒家: 仁 → 天人感应
+//   宋明汇合: 道 → 理, 仁 → 理（朱熹综合先秦儒道）
+//   宋明展开: 理 → 气, 理 → 心 → 良知
+// 注：这些链条展示概念间的主题发展关系，而非线性进步
 
 export const conceptNodes: ConceptNode[] = [
-  // 西方概念演变链
+  // 西方概念
   {
     id: "being",
-    term: { zh: "存在 (Being)", en: "Being" },
+    term: { zh: "存在", en: "Being" },
     tradition: "western",
     definition: {
       zh: "古希腊哲学的核心问题，探讨「是什么」的本质。柏拉图将其与理念关联，亚里士多德则研究「存在之为存在」。",
       en: "The central question of ancient Greek philosophy, exploring the essence of 'what is'. Plato linked it to Forms, Aristotle studied 'being qua being'."
     },
-    source: { work: { zh: "形而上学", en: "Metaphysics" }, chapter: "Book IV" },
-    coOccurrence: ["Substance", "Form", "Essence", "Truth"],
+    source: { work: { zh: "形而上学", en: "Metaphysics" }, chapter: { zh: "第四卷", en: "Book IV" } },
+    coOccurrence: [{ zh: "实体", en: "Substance" }, { zh: "形式", en: "Form" }, { zh: "本质", en: "Essence" }, { zh: "真理", en: "Truth" }],
     weight: 0.95,
   },
   {
+    id: "form",
+    term: { zh: "理念/形式", en: "Form/Idea" },
+    tradition: "western",
+    definition: {
+      zh: "柏拉图哲学的核心，认为现实世界是理念世界的影子，理念是完美、永恒、不变的原型。",
+      en: "Central to Plato's philosophy, the eternal, perfect, unchanging archetypes of which the material world is a copy."
+    },
+    source: { work: { zh: "理想国", en: "The Republic" }, chapter: { zh: "第七卷", en: "Book VII" } },
+    coOccurrence: [{ zh: "存在", en: "Being" }, { zh: "本质", en: "Essence" }, { zh: "真理", en: "Truth" }, { zh: "善", en: "Good" }],
+    weight: 0.93,
+  },
+  {
     id: "substance",
-    term: { zh: "实体 (Substance)", en: "Substance" },
+    term: { zh: "实体", en: "Substance" },
     tradition: "western",
     definition: {
       zh: "亚里士多德哲学的核心范畴，指独立存在、作为属性承载者的基本实在。笛卡尔将其发展为心物二元的实体概念。",
       en: "Core category in Aristotelian philosophy, referring to independent existence as the bearer of properties. Descartes developed it into mind-body dualism."
     },
-    source: { work: { zh: "范畴篇", en: "Categories" }, chapter: "Chapter 5" },
-    coOccurrence: ["Being", "Attribute", "Matter", "Form"],
+    source: { work: { zh: "范畴篇", en: "Categories" }, chapter: { zh: "第五章", en: "Chapter 5" } },
+    coOccurrence: [{ zh: "存在", en: "Being" }, { zh: "属性", en: "Attribute" }, { zh: "质料", en: "Matter" }, { zh: "形式", en: "Form" }],
     weight: 0.92,
   },
   {
+    id: "cogito",
+    term: { zh: "我思", en: "Cogito" },
+    tradition: "western",
+    definition: {
+      zh: "笛卡尔的「我思故我在」，将思维自为的主体确立为知识的不可动摇基础，标志着现代主体性哲学的开端。",
+      en: "Descartes' 'Cogito ergo sum', establishing the thinking self as the indubitable foundation of knowledge, marking the birth of modern subjectivity."
+    },
+    source: { work: { zh: "第一哲学沉思集", en: "Meditations" }, chapter: { zh: "第二沉思", en: "Second Meditation" } },
+    coOccurrence: [{ zh: "主体", en: "Subject" }, { zh: "意识", en: "Consciousness" }, { zh: "怀疑", en: "Doubt" }, { zh: "确定性", en: "Certainty" }],
+    weight: 0.91,
+  },
+  {
     id: "subject",
-    term: { zh: "主体 (Subject)", en: "Subject" },
+    term: { zh: "主体", en: "Subject" },
     tradition: "western",
     definition: {
       zh: "近代哲学的核心概念，笛卡尔的「我思」确立了认识主体的优先地位，康德进一步发展为先验主体。",
       en: "Core concept of modern philosophy. Descartes' 'Cogito' established the primacy of the knowing subject, Kant developed it into the transcendental subject."
     },
-    source: { work: { zh: "第一哲学沉思集", en: "Meditations" }, chapter: "Second Meditation" },
-    coOccurrence: ["Cogito", "Consciousness", "Object", "Knowledge"],
+    source: { work: { zh: "第一哲学沉思集", en: "Meditations" }, chapter: { zh: "第二沉思", en: "Second Meditation" } },
+    coOccurrence: [{ zh: "我思", en: "Cogito" }, { zh: "意识", en: "Consciousness" }, { zh: "客体", en: "Object" }, { zh: "知识", en: "Knowledge" }],
     weight: 0.94,
   },
   {
+    id: "noumenon",
+    term: { zh: "物自体", en: "Thing-in-itself" },
+    tradition: "western",
+    definition: {
+      zh: "康德的「物自体」，指独立于我们的感知之外的事实。我们永远不能直接认识物自体，只能知道现象。",
+      en: "Kant's 'thing-in-itself', the reality as it is independent of our perception. We can never know it directly, only phenomena."
+    },
+    source: { work: { zh: "纯粹理性批判", en: "Critique of Pure Reason" }, chapter: { zh: "先验分析论", en: "Transcendental Analytic" } },
+    coOccurrence: [{ zh: "现象", en: "Phenomenon" }, { zh: "表象", en: "Appearance" }, { zh: "界限", en: "Limit" }, { zh: "理性", en: "Reason" }],
+    weight: 0.89,
+  },
+  {
     id: "language",
-    term: { zh: "语言 (Language)", en: "Language" },
+    term: { zh: "语言", en: "Language" },
     tradition: "western",
     definition: {
       zh: "20世纪哲学的「语言学转向」核心。维特根斯坦认为哲学问题是语言问题，语言的界限即世界的界限。",
       en: "Core of the 20th century 'linguistic turn'. Wittgenstein argued philosophical problems are language problems; the limits of language are the limits of the world."
     },
-    source: { work: { zh: "逻辑哲学论", en: "Tractatus" }, chapter: "Proposition 5.6" },
-    coOccurrence: ["Meaning", "Logic", "Game", "Form of Life"],
+    source: { work: { zh: "逻辑哲学论", en: "Tractatus" }, chapter: { zh: "命题5.6", en: "Proposition 5.6" } },
+    coOccurrence: [{ zh: "意义", en: "Meaning" }, { zh: "逻辑", en: "Logic" }, { zh: "游戏", en: "Game" }, { zh: "生活形式", en: "Form of Life" }],
     weight: 0.90,
   },
-  // 中国概念演变链
+  {
+    id: "will",
+    term: { zh: "权力意志", en: "Will to Power" },
+    tradition: "western",
+    definition: {
+      zh: "尼采的「权力意志」，认为所有生命的根本驱动力是追求力量和自我超越，批判传统道德和价值观。",
+      en: "Nietzsche's 'will to power', the fundamental driving force in all life to seek strength and self-overcoming, critiquing traditional morality."
+    },
+    source: { work: { zh: "查拉图斯特拉如是说", en: "Thus Spoke Zarathustra" }, chapter: { zh: "序言", en: "Prologue" } },
+    coOccurrence: [{ zh: "力量", en: "Power" }, { zh: "价值", en: "Value" }, { zh: "虚无主义", en: "Nihilism" }, { zh: "超人", en: "Overman" }],
+    weight: 0.88,
+  },
+  // 中国概念
   {
     id: "dao",
-    term: { zh: "道/无", en: "Tao/Wu" },
+    term: { zh: "道", en: "Tao" },
     tradition: "chinese",
     definition: {
-      zh: "道家哲学的最高范畴。道是宇宙万物的本源和规律，无是道的本体状态，强调超越有限、回归本真。",
-      en: "The highest category in Taoist philosophy. Tao is the origin and principle of all things; Wu (nothingness) is the ontological state of Tao."
+      zh: "道家哲学的最高范畴。道是宇宙万物的本源和规律，强调超越有限、回归本真、顺应自然。",
+      en: "The highest category in Taoist philosophy. Tao is the origin and principle of all things, emphasizing transcendence of the finite and return to authenticity."
     },
-    source: { work: { zh: "道德经", en: "Tao Te Ching" }, chapter: "Chapter 1" },
-    coOccurrence: ["自然", "无为", "德", "有"],
+    source: { work: { zh: "道德经", en: "Tao Te Ching" }, chapter: { zh: "第一章", en: "Chapter 1" } },
+    coOccurrence: [{ zh: "自然", en: "Ziran (Nature)" }, { zh: "无为", en: "Wu-wei (Non-action)" }, { zh: "德", en: "De (Virtue)" }, { zh: "有", en: "You (Being)" }],
     weight: 0.98,
   },
   {
-    id: "liqi",
-    term: { zh: "理/气", en: "Li/Qi" },
+    id: "wu",
+    term: { zh: "无", en: "Wu/Nothingness" },
     tradition: "chinese",
     definition: {
-      zh: "宋明理学的核心范畴。理是形而上的本体和规律，气是形而下的质料。朱熹主张理先气后，理气不离不杂。",
-      en: "Core categories of Neo-Confucianism. Li is the metaphysical principle, Qi is the material force. Zhu Xi argued Li precedes Qi, they are inseparable yet distinct."
+      zh: "道的本体状态。无不是一种虚空、潜势的存在方式，是万物生成的源泉，强调非为而无为。",
+      en: "The ontological state of the Tao. Wu (nothingness) is a mode of being characterized by emptiness and potential, the source of all things."
     },
-    source: { work: { zh: "四书章句集注", en: "Collected Commentaries" }, chapter: "大学章句" },
-    coOccurrence: ["太极", "格物", "天理", "人欲"],
+    source: { work: { zh: "道德经", en: "Tao Te Ching" }, chapter: { zh: "第二章", en: "Chapter 2" } },
+    coOccurrence: [{ zh: "道", en: "Tao" }, { zh: "自然", en: "Ziran (Nature)" }, { zh: "无为", en: "Wu-wei" }, { zh: "虚", en: "Xu (Emptiness)" }],
     weight: 0.96,
   },
   {
-    id: "xinliangzhi",
-    term: { zh: "心/良知", en: "Mind/Liangzhi" },
+    id: "li",
+    term: { zh: "理", en: "Li/Principle" },
     tradition: "chinese",
     definition: {
-      zh: "心学的核心范畴。王阳明主张「心即理」，良知是心之本体，是先天的道德意识，致良知即实现道德自觉。",
-      en: "Core category of the School of Mind. Wang Yangming argued 'Mind is Principle', Liangzhi is the innate moral consciousness."
+      zh: "宋明理学的形而上本体。理是宇宙的内在规律和模式，是一切事物的根本原理，先于气而立。",
+      en: "The metaphysical principle in Neo-Confucianism. Li is the inherent pattern and law of the universe, the fundamental principle of all things."
     },
-    source: { work: { zh: "传习录", en: "Instructions for Practical Living" }, chapter: "上卷" },
-    coOccurrence: ["知行合一", "致良知", "心即理", "格物"],
-    weight: 0.95,
+    source: { work: { zh: "四书章句集注", en: "Collected Commentaries" }, chapter: { zh: "大学章句", en: "Commentary on the Great Learning" } },
+    coOccurrence: [{ zh: "太极", en: "Taiji (Supreme Ultimate)" }, { zh: "格物", en: "Gewu (Investigation of Things)" }, { zh: "天理", en: "Tianli (Heavenly Principle)" }, { zh: "人欲", en: "Renyu (Human Desire)" }],
+    weight: 0.94,
+  },
+  {
+    id: "qi",
+    term: { zh: "气", en: "Qi" },
+    tradition: "chinese",
+    definition: {
+      zh: "宋明理学的形而下质料。气是构成物质的活力，与理不可分离，共同构成万物的存在。",
+      en: "The material force in Neo-Confucianism. Qi is the vital energy constituting matter, inseparable from Li, together forming all phenomena."
+    },
+    source: { work: { zh: "四书章句集注", en: "Collected Commentaries" }, chapter: { zh: "大学章句", en: "Commentary on the Great Learning" } },
+    coOccurrence: [{ zh: "理", en: "Li (Principle)" }, { zh: "太极", en: "Taiji (Supreme Ultimate)" }, { zh: "阴阳", en: "Yin-Yang" }, { zh: "五行", en: "Wuxing (Five Phases)" }],
+    weight: 0.90,
+  },
+
+  {
+    id: "xin",
+    term: { zh: "心", en: "Mind/Xin" },
+    tradition: "chinese",
+    definition: {
+      zh: "心学的核心。心是 cognition、情感和道德直觉的统一源泉，是人性的本体，与理不可分。",
+      en: "The core of the School of Mind. Mind is the unified source of cognition, emotion, and moral intuition, the ontological basis of human nature."
+    },
+    source: { work: { zh: "传习录", en: "Instructions for Practical Living" }, chapter: { zh: "上卷", en: "Volume I" } },
+    coOccurrence: [{ zh: "良知", en: "Liangzhi (Innate Knowledge)" }, { zh: "道德", en: "Morality" }, { zh: "觉知", en: "Awareness" }, { zh: "情", en: "Qing (Emotion)" }],
+    weight: 0.93,
+  },
+  {
+    id: "liangzhi",
+    term: { zh: "良知", en: "Liangzhi" },
+    tradition: "chinese",
+    definition: {
+      zh: "心学的道德直觉。良知是先天的道德意识，能够即时分别是非，王阳明称其为「心即理」的直接显现。",
+      en: "Moral intuition in the School of Mind. Liangzhi is the innate moral consciousness that immediately distinguishes right from wrong."
+    },
+    source: { work: { zh: "传习录", en: "Instructions for Practical Living" }, chapter: { zh: "上卷", en: "Volume I" } },
+    coOccurrence: [{ zh: "心", en: "Xin (Mind)" }, { zh: "知行合一", en: "Unity of Knowledge and Action" }, { zh: "致良知", en: "Extension of Innate Knowledge" }, { zh: "道德", en: "Morality" }],
+    weight: 0.91,
+  },
+
+  {
+    id: "ren",
+    term: { zh: "仁", en: "Ren/Benevolence" },
+    tradition: "chinese",
+    definition: {
+      zh: "儒家的核心美德。仁是爱人之心，包括同情、关怀和对他人的善意，是人际关系的道德基础。",
+      en: "The core virtue of Confucianism. Ren is the heart of loving others, encompassing compassion, care, and goodwill toward others."
+    },
+    source: { work: { zh: "论语", en: "The Analects" }, chapter: { zh: "颜渊篇", en: "Yan Yuan Chapter" } },
+    coOccurrence: [{ zh: "礼", en: "Li (Ritual)" }, { zh: "义", en: "Yi (Righteousness)" }, { zh: "中庸", en: "Zhongyong (Mean)" }, { zh: "爱人", en: "Loving Others" }],
+    weight: 0.87,
+  },
+  {
+    id: "tianren",
+    term: { zh: "天人感应", en: "Heaven-Human Correlation" },
+    tradition: "chinese",
+    definition: {
+      zh: "汉代儒学的宇宙伦理学。天人感应是天与人之间的对应关系，天的变化反映在人身上，人德感动天。",
+      en: "Cosmic ethics in Han Confucianism. The correlation between Heaven and humanity, where Heaven's changes are reflected in humans."
+    },
+    source: { work: { zh: "春秋繁露", en: "Luxuriant Dew" }, chapter: { zh: "深察名号", en: "Deep Investigation of Names" } },
+    coOccurrence: [{ zh: "天理", en: "Tianli (Heavenly Principle)" }, { zh: "人德", en: "Rende (Human Virtue)" }, { zh: "阴阳", en: "Yin-Yang" }, { zh: "五行", en: "Wuxing (Five Phases)" }],
+    weight: 0.85,
   },
 ];
 
 // --- 概念演变边 ---
+// 注：「evolution」表示概念间的主题发展关系（非线性进步），
+// 「contrast」表示跨文化的对立或差异关系
 
 export const conceptEdges: ConceptEdge[] = [
-  // 西方演变链
-  { source: "being", target: "substance", relation: "evolution" },
-  { source: "substance", target: "subject", relation: "evolution" },
-  { source: "subject", target: "language", relation: "evolution" },
-  // 中国演变链
-  { source: "dao", target: "liqi", relation: "evolution" },
-  { source: "liqi", target: "xinliangzhi", relation: "evolution" },
-  // 跨文化关联
+  // 西方演变链: Being → Form → Substance → Cogito → Subject → Noumenon → Language → Will
+  { source: "being", target: "form", relation: "evolution" },
+  { source: "form", target: "substance", relation: "evolution" },
+  { source: "substance", target: "cogito", relation: "evolution" },
+  { source: "cogito", target: "subject", relation: "evolution" },
+  { source: "subject", target: "noumenon", relation: "evolution" },
+  { source: "noumenon", target: "language", relation: "evolution" },
+  { source: "subject", target: "will", relation: "evolution" },
+  // 中国演变链（按历史时序）:
+  // 先秦道家线: 道 → 无
+  // 先秦儒家线: 仁 → 天人感应
+  // 宋明理学线: 道 → 理, 仁 → 理, 理 → 气, 理 → 心 → 良知
+  { source: "dao", target: "wu", relation: "evolution" },
+  { source: "ren", target: "tianren", relation: "evolution" },
+  { source: "dao", target: "li", relation: "evolution" },
+  { source: "ren", target: "li", relation: "evolution" },
+  { source: "li", target: "qi", relation: "evolution" },
+  { source: "li", target: "xin", relation: "evolution" },
+  { source: "xin", target: "liangzhi", relation: "evolution" },
+  // 跨文化对比（附学理说明）
+  // Being ↔ Dao: 最高本体论范畴——一个导向系词逻辑，一个导向悖论式自否
   { source: "being", target: "dao", relation: "contrast" },
-  { source: "liqi", target: "substance", relation: "contrast" },
-  { source: "subject", target: "xinliangzhi", relation: "contrast" },
+  // Form ↔ Li: 超越个体的普遍原则——Form超越于事物（分离），Li内在于事物（理在气中）
+  { source: "form", target: "li", relation: "contrast" },
+  // Substance ↔ Qi: 构成万物的基底——Substance要求持存性，Qi拥抱流变性
+  { source: "substance", target: "qi", relation: "contrast" },
+  // Cogito ↔ Xin: 主体性的确立——Cogito纯粹认知性，Xin兼具认知与道德
+  { source: "cogito", target: "xin", relation: "contrast" },
+  // Subject ↔ Xin: 主体性问题的不同回答
+  { source: "subject", target: "xin", relation: "contrast" },
+  // Noumenon ↔ Wu: 认识边界——不可知者与不可名者
+  { source: "noumenon", target: "wu", relation: "contrast" },
+  // Noumenon ↔ Dao: 超越现象的终极实在
+  { source: "noumenon", target: "dao", relation: "contrast" },
+  // Will to Power ↔ Liangzhi: 行动驱力——探索性对照，争议较大
+  { source: "will", target: "liangzhi", relation: "contrast" },
 ];
 
 
 // --- 概念投影坐标 (用于散点图) ---
 // 基于预计算的词向量，投射到二维平面
+// x轴: 抽象 ← → 具体 (Abstract - Concrete)
+// y轴: 实践 ← → 形而上 (Practical - Metaphysical)
+// 注：坐标来自词向量降维，轴标签为解释性标注，不代表绝对定义
 
 export const conceptProjections: ConceptProjection[] = [
   // 西方概念
@@ -547,6 +750,7 @@ export const conceptProjections: ConceptProjection[] = [
 ];
 
 // --- 雷达图维度评分 ---
+// 评分基于专家判断，反映概念在五大哲学维度上的倾向性强度 (0-100)
 
 export const radarDimensions: RadarDimension[] = [
   // 西方概念
@@ -567,9 +771,6 @@ export const radarDimensions: RadarDimension[] = [
   { conceptId: "liangzhi", ontology: 70, epistemology: 85, ethics: 98, aesthetics: 65, logic: 50 },
   { conceptId: "ren", ontology: 55, epistemology: 60, ethics: 98, aesthetics: 75, logic: 40 },
   { conceptId: "tianren", ontology: 85, epistemology: 70, ethics: 80, aesthetics: 65, logic: 50 },
-  // 概念网络中的复合概念
-  { conceptId: "liqi", ontology: 92, epistemology: 82, ethics: 75, aesthetics: 58, logic: 68 },
-  { conceptId: "xinliangzhi", ontology: 73, epistemology: 87, ethics: 95, aesthetics: 68, logic: 53 },
 ];
 
 // --- 辅助函数 ---
