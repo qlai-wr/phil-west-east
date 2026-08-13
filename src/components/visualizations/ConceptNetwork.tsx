@@ -11,8 +11,8 @@ interface NetworkNode extends d3.SimulationNodeDatum {
   term: { zh: string; en: string }
   tradition: 'western' | 'chinese'
   definition: { zh: string; en: string }
-  source: { work: { zh: string; en: string }; chapter?: string }
-  coOccurrence: string[]
+  source: { work: { zh: string; en: string }; chapter?: { zh: string; en: string } }
+  coOccurrence: { zh: string; en: string }[]
   weight: number
 }
 
